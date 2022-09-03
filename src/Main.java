@@ -7,9 +7,10 @@ public class Main {
 
     // В стоимости этих товаров каждые три товара должны стоить как два:
     public static String[] productsOnSale = {"Хлеб", "Мороженка"};
-    public static int MIN_COST_FOR_BONUS = 1000;
 
     public static void main(String[] args) {
+        int amount = 0;
+
         System.out.println("Добро пожаловать в магазин!");
         System.out.println("Наш ассортимент:");
         for (int i = 0; i < products.length; i++) {
@@ -17,7 +18,7 @@ public class Main {
         }
         System.out.println();
 
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);  //сканер
 
         int[] counts = new int[products.length];
 
@@ -28,39 +29,45 @@ public class Main {
             if ("end".equals(line)) {
                 break;
             }
+            try {  //проверка на ошибку
+                String[] parts = line.split(" ");
+                if (parts.length != 2) {
+                    System.out.println("Ошибка! Введены некорректные данные");  //сообщение об ошибке
+                    continue;
+                } else {
+                    int productNum = Integer.parseInt(parts[0]) - 1;
+                    int productCount = Integer.parseInt(parts[1]);
 
-            String[] parts = line.split(" ");
-            int productNum = Integer.parseInt(parts[0]) - 1;
-            int productCount = Integer.parseInt(parts[1]);
-
-            counts[productNum] += productCount;
+                    counts[productNum] += productCount;
+                }
+            } catch (NumberFormatException | ArrayIndexOutOfBoundsException) {
+                System.out.println("Ошибка! Введены некорректные данные");
+                continue;
+            }
         }
-
-        System.out.println("Ваша корзина покупок:");
-        int sum = 0;
         boolean doBonus = sum >= MIN_COST_FOR_BONUS;
         for (int i = 0; i < products.length; i++) {
-            sum += prices[i] * counts[i];
             if (counts[i] != 0) {
-                System.out.println("\t" + products[i] + " " + (doBonus ? counts[i] + 1 : counts[i]) + " шт. за " + (prices[i] * counts[i]) + " руб.");
-            }
-            boolean isOnSale = false;
-            for (String saleProduct : productsOnSale) {
-                if (products[i].equals(saleProduct)) {
-                    isOnSale = true;
+                boolean isOnSale = false;
+                for (String saleProduct : productsOnSale) {
+                    if (products[i].equals(saleProduct)) {
+                        isOnSale = true;
+                    }
+                }
+                int c = (doBonus ? counts[i] + 1 : counts[i]);
+
+                if (isOnSale && doBonus) {
+                    System.out.println("\t" + products[i] + " " + c + " шт. за " + (prices[i] * (counts[i] / 3 * 2 + counts[i] % 3)) + " руб. (распродажа и акция!)");
+                    amount += prices[i] * (counts[i] / 3 * 2 + counts[i] % 3);
+                } else if (isOnSale) {
+                    System.out.println("\t" + products[i] + " " + c + " шт. за " + (prices[i] * (counts[i] / 3 * 2 + counts[i] % 3)) + " руб. (распродажа!)");
+                    amount += prices[i] * (counts[i] / 3 * 2 + counts[i] % 3);
+                } else {
+                    System.out.println("\t" + products[i] + " " + c + " шт. за " + (prices[i] * counts[i]) + " руб.");
+                    amount += prices[i] * counts[i];
                 }
             }
-
-            if (isOnSale) {
-                System.out.println("\t" + products[i] + " " + counts[i] + " шт. за " + (prices[i] * (counts[i] / 3 * 2 + counts[i] % 3)) + " руб. (распродажа!)");
-                sum += prices[i] * (counts[i] / 3 * 2 + counts[i] % 3);
-            } else {
-                System.out.println("\t" + products[i] + " " + counts[i] + " шт. за " + (prices[i] * counts[i]) + " руб.");
-                sum += prices[i] * counts[i];
-            }
         }
+        System.out.println("Итого: " + amount + " руб.");
     }
-        System.out.println("Итого: "+sum +" руб.");
-}
-
 }
